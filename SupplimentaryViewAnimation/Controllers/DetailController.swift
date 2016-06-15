@@ -9,6 +9,41 @@
 import Foundation
 import UIKit
 
+protocol RowSelectable {
+    func rowSelected(indexPath:NSIndexPath)
+}
+
 class DetailController:UIViewController {
     static let storyboardID = "DetailContainer"
+    
+    weak var collectionDelegate:CollectionController?
+    weak var detailCollectionController:DetailCollectionViewController?
+    weak var detailTableController:DetailTableViewController?
+    
+    private var neededHeight:CGFloat = 300
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        for childVC in childViewControllers {
+            if childVC.isMemberOfClass(DetailTableViewController) {
+                detailTableController = childVC as? DetailTableViewController
+                detailTableController?.detailController = self
+            } else if childVC.isMemberOfClass(DetailCollectionViewController) {
+                detailCollectionController = childVC as? DetailCollectionViewController
+                detailCollectionController?.detailController = self
+            }
+        }
+    }
+    
+    func heightNeeded() -> CGFloat {
+        return neededHeight
+    }
+}
+
+extension DetailController: RowSelectable {
+    func rowSelected(indexPath:NSIndexPath) {
+        neededHeight = CGFloat(indexPath.row * 15 + 300)
+        collectionDelegate?.shouldResizeDetail()
+    }
 }

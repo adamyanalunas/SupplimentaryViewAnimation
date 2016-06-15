@@ -7,3 +7,8 @@
 //
 
 import Foundation
+import UIKit
+
+class DetailCollectionViewController:UICollectionViewController {
+    weak var detailController:DetailController?
+}

@@ -9,6 +9,10 @@
 import Foundation
 import UIKit
 
+protocol DetailResizable {
+    func shouldResizeDetail()
+}
+
 class CollectionController: UICollectionViewController {
     let cells = 10
     var detailController:DetailController?
@@ -80,6 +84,7 @@ class CollectionController: UICollectionViewController {
         if let detailController = sb.instantiateViewControllerWithIdentifier(DetailController.storyboardID) as? DetailController {
             addChildViewController(detailController)
             detailController.view.autoresizingMask = [.FlexibleWidth, .FlexibleHeight]
+            detailController.collectionDelegate = self
             self.detailController = detailController
         }
     }
@@ -90,5 +95,15 @@ class CollectionController: UICollectionViewController {
         detailController.view.removeFromSuperview()
         detailController.removeFromParentViewController()
         self.detailController = nil
-   }
+    }
+}
+
+extension CollectionController: DetailResizable {
+    func shouldResizeDetail() {
+        if let heightNeeded = self.detailController?.heightNeeded() {
+            collectionView?.performBatchUpdates({ 
+                self.layout.detailViewSize = CGSizeMake(0, heightNeeded)
+                }, completion: nil)
+        }
+    }
 }

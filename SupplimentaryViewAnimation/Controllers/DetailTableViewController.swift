@@ -10,6 +10,8 @@ import Foundation
 import UIKit
 
 class DetailTableViewController: UITableViewController {
+    weak var detailController:DetailController?
+    
     let rows:Int = 20
     
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -22,5 +24,9 @@ class DetailTableViewController: UITableViewController {
         cell.textLabel?.text = "Cell \(indexPath.row)"
         
         return cell
+    }
+    
+    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+        detailController?.rowSelected(indexPath)
     }
 }
