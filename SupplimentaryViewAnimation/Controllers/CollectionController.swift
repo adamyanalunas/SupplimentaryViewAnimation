@@ -21,17 +21,21 @@ class CollectionController: UICollectionViewController {
     let cells = 10
     var detailController:DetailController?
     let layout = Layout()
+    var minimalController:UIViewController?
+    var minimalTapGesture:UITapGestureRecognizer?
     let sections = 1
     
     override func viewDidLoad() {
-        collectionView?.registerClass(Supplimentary.self, forSupplementaryViewOfKind: Supplimentary.ID, withReuseIdentifier: Supplimentary.ID)
+        guard let collectionView = collectionView else { return }
+        collectionView.registerClass(Supplimentary.self, forSupplementaryViewOfKind: Supplimentary.ID, withReuseIdentifier: Supplimentary.ID)
         
         layout.itemSize = CGSizeMake(145, 145);
         layout.minimumInteritemSpacing = 44;
         layout.minimumLineSpacing = 22;
-        layout.sectionInset = UIEdgeInsetsMake(21, 21, 0, 0)
+        layout.sectionInset = UIEdgeInsetsMake(20, 20, 20, 20)
         
-        self.collectionView?.collectionViewLayout = layout
+        collectionView.collectionViewLayout = layout
+        selectCell(NSIndexPath(forItem: 0, inSection: 0), collectionView: collectionView)
     }
     
     override func numberOfSectionsInCollectionView(collectionView: UICollectionView) -> Int {
@@ -58,21 +62,26 @@ class CollectionController: UICollectionViewController {
         
         supplementary.backgroundColor = UIColor.cyanColor()
         
-//        let tapGesture = UITapGestureRecognizer(target: self, action: .tapSelector)
-//        tapGesture.numberOfTapsRequired = 1
-//        supplementary.addGestureRecognizer(tapGesture)
-        
         if let detailController = self.detailController {
             detailController.view.frame = supplementary.bounds
             supplementary.addSubview(detailController.view)
             
 //            detailController.view.autoresizingMask = [.FlexibleWidth, .FlexibleHeight]
-            detailController.view.translatesAutoresizingMaskIntoConstraints = false
-            let views = ["detail": detailController.view]
-            let hConstraints = NSLayoutConstraint.constraintsWithVisualFormat("H:|[detail]|", options: [], metrics: nil, views: views)
-            let vConstraints = NSLayoutConstraint.constraintsWithVisualFormat("V:|[detail]|", options: [], metrics: nil, views: views)
-            supplementary.addConstraints(hConstraints)
-            supplementary.addConstraints(vConstraints)
+//            detailController.view.translatesAutoresizingMaskIntoConstraints = false
+//            let views = ["detail": detailController.view]
+//            let hConstraints = NSLayoutConstraint.constraintsWithVisualFormat("H:|[detail]|", options: [], metrics: nil, views: views)
+//            let vConstraints = NSLayoutConstraint.constraintsWithVisualFormat("V:|[detail]|", options: [], metrics: nil, views: views)
+//            supplementary.addConstraints(hConstraints)
+//            supplementary.addConstraints(vConstraints)
+        }
+        
+        if let minimalController = self.minimalController {
+            self.minimalTapGesture = UITapGestureRecognizer(target: self, action: .tapSelector)
+            self.minimalTapGesture!.numberOfTapsRequired = 1
+            supplementary.addGestureRecognizer(self.minimalTapGesture!)
+            
+            minimalController.view.frame = supplementary.bounds
+            supplementary.addSubview(minimalController.view)
         }
         
         return supplementary
@@ -85,7 +94,7 @@ class CollectionController: UICollectionViewController {
         } else {
             heightNeeded = 300
         }
-        print("tap resize")
+        
         layout.invalidateLayout()
         collectionView?.performBatchUpdates({
             self.layout.detailViewSize = CGSizeMake(0, heightNeeded)
@@ -93,17 +102,34 @@ class CollectionController: UICollectionViewController {
     }
 
     override func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
+        selectCell(indexPath, collectionView: collectionView)
+    }
+    
+    func selectCell(indexPath:NSIndexPath, collectionView:UICollectionView) {
         detailController?.view.layoutIfNeeded()
+        
+        let firstCellPath = NSIndexPath(forItem: 0, inSection: 0)
+        let useMinimal = firstCellPath.compare(indexPath) == .OrderedSame
+        
         collectionView.performBatchUpdates({
             if !self.layout.selected {
-//                print("reveal")
-                self.showDetail(indexPath)
+                
+                if useMinimal {
+                    self.showMinimal()
+                } else {
+                    self.showDetail()
+                }
+                
                 self.layout.selectedIndexPath = indexPath
                 self.layout.selected = true
             } else {
-//                print("hide")
                 self.layout.selected = false
-                self.hideDetail()
+                
+                if useMinimal {
+                    self.hideMinimal()
+                } else {
+                    self.hideDetail()
+                }
             }
             self.detailController?.view.layoutIfNeeded()
             }, completion: { (done) in
@@ -111,9 +137,7 @@ class CollectionController: UICollectionViewController {
         })
     }
     
-    
-    
-    func showDetail(indexPath:NSIndexPath) {
+    func showDetail() {
         let sb = UIStoryboard(name: "Main", bundle: nil)
         if let detailController = sb.instantiateViewControllerWithIdentifier(DetailController.storyboardID) as? DetailController {
             addChildViewController(detailController)
@@ -129,15 +153,30 @@ class CollectionController: UICollectionViewController {
         detailController.removeFromParentViewController()
         self.detailController = nil
     }
+    
+    func showMinimal() {
+        let sb = UIStoryboard(name: "Main", bundle: nil)
+        let detailController = sb.instantiateViewControllerWithIdentifier("SimplifiedViewController")
+        addChildViewController(detailController)
+        self.minimalController = detailController
+    }
+    
+    func hideMinimal() {
+        guard let minimalController = self.minimalController else { return }
+        
+        minimalController.view.removeFromSuperview()
+        minimalController.removeFromParentViewController()
+        self.minimalController = nil
+    }
 }
 
 extension CollectionController: DetailResizable {
     func shouldResizeDetail() {
-        if let heightNeeded = self.detailController?.heightNeeded() {
-            layout.invalidateLayout()
-            collectionView?.performBatchUpdates({
-                self.layout.detailViewSize = CGSizeMake(0, heightNeeded)
-                }, completion: nil)
-        }
+//        if let heightNeeded = self.detailController?.heightNeeded() {
+//            layout.invalidateLayout()
+//            collectionView?.performBatchUpdates({
+//                self.layout.detailViewSize = CGSizeMake(0, heightNeeded)
+//                }, completion: nil)
+//        }
     }
 }
