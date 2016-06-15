@@ -13,6 +13,10 @@ protocol DetailResizable {
     func shouldResizeDetail()
 }
 
+private extension Selector {
+    static let tapSelector = #selector(CollectionController.detailTapped(_:))
+}
+
 class CollectionController: UICollectionViewController {
     let cells = 10
     var detailController:DetailController?
@@ -54,15 +58,42 @@ class CollectionController: UICollectionViewController {
         
         supplementary.backgroundColor = UIColor.cyanColor()
         
+//        let tapGesture = UITapGestureRecognizer(target: self, action: .tapSelector)
+//        tapGesture.numberOfTapsRequired = 1
+//        supplementary.addGestureRecognizer(tapGesture)
+        
         if let detailController = self.detailController {
             detailController.view.frame = supplementary.bounds
             supplementary.addSubview(detailController.view)
+            
+//            detailController.view.autoresizingMask = [.FlexibleWidth, .FlexibleHeight]
+            detailController.view.translatesAutoresizingMaskIntoConstraints = false
+            let views = ["detail": detailController.view]
+            let hConstraints = NSLayoutConstraint.constraintsWithVisualFormat("H:|[detail]|", options: [], metrics: nil, views: views)
+            let vConstraints = NSLayoutConstraint.constraintsWithVisualFormat("V:|[detail]|", options: [], metrics: nil, views: views)
+            supplementary.addConstraints(hConstraints)
+            supplementary.addConstraints(vConstraints)
         }
         
         return supplementary
     }
     
+    func detailTapped(gesture:UITapGestureRecognizer) {
+        let heightNeeded:CGFloat
+        if layout.detailViewSize.height == 300 {
+            heightNeeded = 350
+        } else {
+            heightNeeded = 300
+        }
+        print("tap resize")
+        layout.invalidateLayout()
+        collectionView?.performBatchUpdates({
+            self.layout.detailViewSize = CGSizeMake(0, heightNeeded)
+            }, completion: nil)
+    }
+
     override func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
+        detailController?.view.layoutIfNeeded()
         collectionView.performBatchUpdates({
             if !self.layout.selected {
 //                print("reveal")
@@ -74,16 +105,18 @@ class CollectionController: UICollectionViewController {
                 self.layout.selected = false
                 self.hideDetail()
             }
+            self.detailController?.view.layoutIfNeeded()
             }, completion: { (done) in
                 self.layout.invalidateLayout()
         })
     }
     
+    
+    
     func showDetail(indexPath:NSIndexPath) {
         let sb = UIStoryboard(name: "Main", bundle: nil)
         if let detailController = sb.instantiateViewControllerWithIdentifier(DetailController.storyboardID) as? DetailController {
             addChildViewController(detailController)
-            detailController.view.autoresizingMask = [.FlexibleWidth, .FlexibleHeight]
             detailController.collectionDelegate = self
             self.detailController = detailController
         }
@@ -101,7 +134,8 @@ class CollectionController: UICollectionViewController {
 extension CollectionController: DetailResizable {
     func shouldResizeDetail() {
         if let heightNeeded = self.detailController?.heightNeeded() {
-            collectionView?.performBatchUpdates({ 
+            layout.invalidateLayout()
+            collectionView?.performBatchUpdates({
                 self.layout.detailViewSize = CGSizeMake(0, heightNeeded)
                 }, completion: nil)
         }

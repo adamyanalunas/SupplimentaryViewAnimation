@@ -24,6 +24,7 @@ class DetailController:UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        view.backgroundColor = UIColor.redColor()
         
         for childVC in childViewControllers {
             if childVC.isMemberOfClass(DetailTableViewController) {
@@ -43,7 +44,7 @@ class DetailController:UIViewController {
 
 extension DetailController: RowSelectable {
     func rowSelected(indexPath:NSIndexPath) {
-        neededHeight = CGFloat(indexPath.row * 15 + 300)
+        neededHeight = CGFloat(indexPath.row * 44 + 300)
         collectionDelegate?.shouldResizeDetail()
     }
 }
