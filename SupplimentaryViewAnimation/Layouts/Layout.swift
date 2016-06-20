@@ -16,10 +16,6 @@ class Layout:UICollectionViewFlowLayout {
     
     private var selectedTopOffset:CGFloat = 0
     
-    override class func layoutAttributesClass() -> AnyClass {
-        return LayoutAttributes.self
-    }
-    
     override init() {
         super.init()
         selected = false
@@ -45,8 +41,6 @@ class Layout:UICollectionViewFlowLayout {
             var frame = layoutAttributes.frame;
             frame.size.height += detailViewSize.height;
             layoutAttributesCopy.frame = frame;
-            
-//            layoutAttributes.selected = true;
         }
         else if selected && shouldPushDown
         {
@@ -80,7 +74,7 @@ class Layout:UICollectionViewFlowLayout {
     }
     
     override func layoutAttributesForSupplementaryViewOfKind(elementKind: String, atIndexPath indexPath: NSIndexPath) -> UICollectionViewLayoutAttributes? {
-        let attributes = LayoutAttributes(forSupplementaryViewOfKind: elementKind, withIndexPath: indexPath)
+        let attributes = UICollectionViewLayoutAttributes(forSupplementaryViewOfKind: elementKind, withIndexPath: indexPath)
         if elementKind == Supplimentary.ID {
             if let cellAttributes = self.layoutAttributesForItemAtIndexPath(indexPath), let collectionView = collectionView {
                 var frame = cellAttributes.frame

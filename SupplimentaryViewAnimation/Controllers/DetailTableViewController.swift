@@ -1,4 +1,4 @@
-//
+    //
 //  DetailTableViewController.swift
 //  SupplimentaryViewAnimation
 //
@@ -10,7 +10,7 @@ import Foundation
 import UIKit
 
 class DetailTableViewController: UITableViewController {
-    weak var detailController:DetailController?
+    weak var badController:BadController?
     
     let rows:Int = 20
     
@@ -24,9 +24,5 @@ class DetailTableViewController: UITableViewController {
         cell.textLabel?.text = "Cell \(indexPath.row)"
         
         return cell
-    }
-    
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        detailController?.rowSelected(indexPath)
     }
 }

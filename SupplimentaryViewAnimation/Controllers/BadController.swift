@@ -1,5 +1,5 @@
 //
-//  DetailCollectionViewController.swift
+//  BadController.swift
 //  SupplimentaryViewAnimation
 //
 //  Created by Adam Yanalunas on 6/15/16.
@@ -9,6 +9,6 @@
 import Foundation
 import UIKit
 
-class DetailCollectionViewController:UICollectionViewController {
-    weak var detailController:DetailController?
+class BadController:UIViewController {
+    static let storyboardID = "DetailContainer"
 }
