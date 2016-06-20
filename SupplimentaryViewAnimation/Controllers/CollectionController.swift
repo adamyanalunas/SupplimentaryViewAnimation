@@ -14,12 +14,9 @@ private extension Selector {
 }
 
 class CollectionController: UICollectionViewController {
-    let cells = 10
     var badController:BadController?
+    var goodController:UIViewController?
     let layout = Layout()
-    var minimalController:UIViewController?
-    var minimalTapGesture:UITapGestureRecognizer?
-    let sections = 1
     
     override func viewDidLoad() {
         guard let collectionView = collectionView else { return }
@@ -38,7 +35,7 @@ class CollectionController: UICollectionViewController {
     }
     
     override func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return cells
+        return 10
     }
     
     override func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
@@ -64,9 +61,9 @@ class CollectionController: UICollectionViewController {
             supplementary.addSubview(badController.view)
         }
         
-        if let minimalController = self.minimalController {
-            minimalController.view.frame = supplementary.bounds
-            supplementary.addSubview(minimalController.view)
+        if let goodController = self.goodController {
+            goodController.view.frame = supplementary.bounds
+            supplementary.addSubview(goodController.view)
         }
         
         return supplementary
@@ -94,27 +91,23 @@ class CollectionController: UICollectionViewController {
         badController?.view.layoutIfNeeded()
         
         let firstCellPath = NSIndexPath(forItem: 0, inSection: 0)
-        let useMinimal = firstCellPath.compare(indexPath) == .OrderedSame
+        let showWorking = firstCellPath.compare(indexPath) == .OrderedSame
         
         collectionView.performBatchUpdates({
             if !self.layout.selected {
                 
-                if useMinimal {
-                    self.showMinimal()
+                if showWorking {
+                    self.showWorking()
                 } else {
-                    self.showDetail()
+                    self.showBroken()
                 }
                 
                 self.layout.selectedIndexPath = indexPath
                 self.layout.selected = true
             } else {
                 self.layout.selected = false
-                
-                if useMinimal {
-                    self.hideMinimal()
-                } else {
-                    self.hideDetail()
-                }
+                self.hideWorking()
+                self.hideBroken()
             }
             self.badController?.view.layoutIfNeeded()
             }, completion: { (done) in
@@ -122,7 +115,7 @@ class CollectionController: UICollectionViewController {
         })
     }
     
-    func showDetail() {
+    func showBroken() {
         let sb = UIStoryboard(name: "Main", bundle: nil)
         if let badController = sb.instantiateViewControllerWithIdentifier(BadController.storyboardID) as? BadController {
             addChildViewController(badController)
@@ -130,7 +123,7 @@ class CollectionController: UICollectionViewController {
         }
     }
     
-    func hideDetail() {
+    func hideBroken() {
         guard let badController = self.badController else { return }
         
         badController.view.removeFromSuperview()
@@ -138,18 +131,18 @@ class CollectionController: UICollectionViewController {
         self.badController = nil
     }
     
-    func showMinimal() {
+    func showWorking() {
         let sb = UIStoryboard(name: "Main", bundle: nil)
         let badController = sb.instantiateViewControllerWithIdentifier("SimplifiedViewController")
         addChildViewController(badController)
-        self.minimalController = badController
+        self.goodController = badController
     }
     
-    func hideMinimal() {
-        guard let minimalController = self.minimalController else { return }
+    func hideWorking() {
+        guard let goodController = self.goodController else { return }
         
-        minimalController.view.removeFromSuperview()
-        minimalController.removeFromParentViewController()
-        self.minimalController = nil
+        goodController.view.removeFromSuperview()
+        goodController.removeFromParentViewController()
+        self.goodController = nil
     }
 }
